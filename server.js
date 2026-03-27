@@ -76,9 +76,19 @@ const captureLimiter = rateLimit({ windowMs: 60*1000, max: 15 });
 
 app.post('/api/leads', captureLimiter, async (req, res) => {
   try {
-    const { nome, telefone, utm_source, utm_medium, utm_campaign, utm_content, utm_term, pagina } = req.body;
+    // Aceita variações de campos (Greatpages, Meta Ads, Google Ads, manual)
+    const nome     = req.body.nome     || req.body.Nome     || req.body.name     || req.body.Name     || '';
+    const telefone = req.body.telefone || req.body.Whatsapp || req.body.whatsapp || req.body.phone    || req.body.Phone    || req.body.celular  || '';
+    const utm_source   = req.body.utm_source   || req.body['UTM source']   || req.body.utmSource   || '';
+    const utm_medium   = req.body.utm_medium   || req.body['UTM medium']   || req.body.utmMedium   || '';
+    const utm_campaign = req.body.utm_campaign || req.body['UTM campaign'] || req.body.utmCampaign || '';
+    const utm_content  = req.body.utm_content  || req.body['UTM content']  || req.body.utmContent  || '';
+    const utm_term     = req.body.utm_term     || req.body['UTM term']     || req.body.utmTerm     || '';
+    const pagina       = req.body.pagina       || req.body.URL             || req.body.url         || '';
 
-    if (!nome || !telefone) return res.status(400).json({ error: 'Nome e telefone obrigatórios.' });
+    console.log('📥 Lead recebido:', JSON.stringify(req.body));
+
+    if (!nome || !telefone) return res.status(400).json({ error: 'Nome e telefone obrigatórios.', received: req.body });
 
     const phone = String(telefone).replace(/\D/g,'');
     if (phone.length < 8) return res.status(400).json({ error: 'Telefone inválido.' });
